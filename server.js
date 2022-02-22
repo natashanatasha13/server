@@ -11,8 +11,6 @@ const http = require("http");
 
 const server = http.createServer();
 
-let todos = [];
-
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "*",
@@ -20,10 +18,8 @@ const headers = {
 };
 const statusChanger = (statusArg, request, response) => {
   const thisItem = parseInt(request.url.slice(14));
-  const isTodoDefined = todos.find((todo) => {
-    return todo.id === thisItem;
-  });
-  console.log(todos);
+  const isTodoDefined = db.Todo({ id: thisItem });
+
   if (!isTodoDefined) {
     console.log(thisItem);
     response.writeHead(404, "todo is not defined");
@@ -60,34 +56,27 @@ server.on("request", (req, res) => {
 
   if (req.method === "GET") {
     const findTd = async () => {
-      const td = await db.Todo.find();
+      const td = await db.Todo.find({ status: { $in: [0, 1] } });
       res.end(JSON.stringify(td));
     };
-    findTd();
-    return;
-  }
 
-  if (req.method === "DELETE") {
-    const deletedItem = parseInt(req.url.slice(1));
-    const isTodoDefined = todos.find((todo) => {
-      return todo.id === deletedItem;
-    });
+    if (JSON.stringify(req.url).includes("getCounter")) {
+      const thisItem = parseInt(req.url.slice(12));
+      const findByStatus = async (status) => {
+        if (status === 3) {
+          const td = await db.Todo.find({ status: 1 });
+          res.end(JSON.stringify(td.length));
+        } else {
+          const td = await db.Todo.find({ status: status });
+          res.end(JSON.stringify(td.length));
+        }
+      };
 
-    if (!isTodoDefined) {
-      res.writeHead(404, "todo is not defined");
-
-      res.end();
+      findByStatus(thisItem);
       return;
     }
-    db.Todo.remove({ id: deletedItem }, function (err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Result :", result);
-      }
-    });
-    todos = todos.filter((todo) => todo.id !== deletedItem);
-    res.end("deleted");
+
+    findTd();
     return;
   }
 
@@ -99,13 +88,8 @@ server.on("request", (req, res) => {
     req.on("end", async () => {
       const value = JSON.parse(body).value;
       const status = JSON.parse(body).status;
-      const id = JSON.parse(body).id;
+      const id = await db.Todo.count();
       const filter = JSON.parse(body).filter;
-
-      /* if (todos.length > length) {
-        length = todos.length;
-      } else {
-      }*/
 
       if (JSON.stringify(req.url).includes("changeStatus")) {
         statusChanger(status, req, res);
@@ -136,14 +120,7 @@ server.on("request", (req, res) => {
       });
       await newTodo.save();
 
-      const pushinTodos = async () => {
-        const td = await db.Todo.find();
-        todos.push(td[td.length - 1]);
-        console.log("filled", todos);
-      };
-
-      pushinTodos();
-      res.end("added");
+      res.end(JSON.stringify(newTodo));
     });
   }
 });
