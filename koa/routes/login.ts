@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
-import db from "../models/User.js";
-const login = async (ctx, next) => {
+import db from "../models/User";
+import { Context, Next } from "koa";
+
+const login = async (ctx: Context, next: Next) => {
   const { login, password } = ctx.request.body;
   const existingUser = await db.User.find({
     login: login,

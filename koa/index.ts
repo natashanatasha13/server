@@ -1,18 +1,19 @@
 "use strict";
-import db from "./mongo.js";
-import findTd from "./routes/get.js";
-import statusChanger from "./routes/changeStatus.js";
-import findByStatus from "./routes/getCounter.js";
-import post from "./routes/post.js";
-import login from "./routes/login.js";
-import registration from "./routes/registration.js";
+import db from "./mongo";
+import findTd from "./routes/get";
+import statusChanger from "./routes/changeStatus";
+import findByStatus from "./routes/getCounter";
+import post from "./routes/post";
+import login from "./routes/login";
+import registration from "./routes/registration";
 import bodyParser from "koa-bodyparser";
 import Koa from "koa";
-import Router from "@koa/router";
-import cors from "@koa/cors";
+import Router from "koa-router";
+import cors from "koa-cors";
+import { Context, Next } from "koa";
 
-const app = new Koa();
-const router = new Router();
+const app: Koa = new Koa();
+const router: Router = new Router();
 
 app.use(cors());
 app.use(async (ctx, next) => {
@@ -25,10 +26,10 @@ app.use(async (ctx, next) => {
 
 db.connectDB();
 
-app.use(async (ctx, next) => {
+app.use(async (ctx: Context, next: Next) => {
   try {
     await next();
-  } catch (err) {
+  } catch (err: any) {
     console.log(err.status);
     ctx.status = err.status || 500;
     ctx.body = err.message;
