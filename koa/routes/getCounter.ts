@@ -1,4 +1,5 @@
-import db from "../models/Todo.js";
+import db from "../models/Todo";
+import { Context, Next } from "koa";
 
 const STATUSES = {
   active: 1,
@@ -6,7 +7,7 @@ const STATUSES = {
   deleted: 2,
 };
 
-const findByStatus = async (ctx, next) => {
+const findByStatus = async (ctx: Context, next: Next) => {
   const thisStatus = parseInt(ctx.request.url.slice(12));
 
   if (thisStatus === 3) {

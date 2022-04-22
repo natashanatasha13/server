@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
-import db from "../models/User.js";
-const registration = async (ctx, next) => {
+import db from "../models/User";
+import { Context, Next } from "koa";
+
+const registration = async (ctx: Context, next: Next) => {
   const { login, username, password } = ctx.request.body;
   const id = await db.User.count();
   const rounds = 10;
